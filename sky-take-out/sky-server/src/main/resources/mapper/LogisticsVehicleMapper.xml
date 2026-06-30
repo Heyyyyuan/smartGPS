@@ -57,6 +57,20 @@
         WHERE plate = #{plate}
     </select>
 
+    <select id="findByVinTopic" resultType="com.sky.logistics.entity.Vehicle">
+        SELECT
+        <include refid="VehicleColumns"/>
+        FROM vehicles
+        WHERE vin_topic = #{vinTopic}
+    </select>
+
+    <select id="findByImei" resultType="com.sky.logistics.entity.Vehicle">
+        SELECT
+        <include refid="VehicleColumns"/>
+        FROM vehicles
+        WHERE device_imei = #{imei}
+    </select>
+
     <select id="findById" resultType="com.sky.logistics.entity.Vehicle">
         SELECT
         <include refid="VehicleColumns"/>
