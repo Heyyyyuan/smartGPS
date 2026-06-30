@@ -2,7 +2,11 @@ package com.sky.logistics.controller;
 
 import com.sky.logistics.common.ApiResponse;
 import com.sky.logistics.common.PageResponse;
+import com.sky.logistics.dto.CargoCreateDTO;
+import com.sky.logistics.dto.CargoQueryDTO;
+import com.sky.logistics.service.CargoService;
 import com.sky.logistics.service.LogisticsStarterService;
+import com.sky.logistics.vo.CargoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,30 +27,37 @@ import java.util.Map;
 public class CargoController {
 
     private final LogisticsStarterService starterService;
+    private final CargoService cargoService;
 
-    public CargoController(LogisticsStarterService starterService) {
+    public CargoController(LogisticsStarterService starterService, CargoService cargoService) {
         this.starterService = starterService;
+        this.cargoService = cargoService;
     }
 
     @GetMapping
     @ApiOperation("获取货物列表")
-    public ApiResponse<PageResponse<Map<String, Object>>> list(@RequestParam(required = false) String status,
-                                                               @RequestParam(required = false) String keyword,
-                                                               @RequestParam(required = false) Integer page,
-                                                               @RequestParam(required = false) Integer size) {
-        return ApiResponse.success(starterService.cargo(status, keyword, page, size));
+    public ApiResponse<PageResponse<CargoVO>> list(@RequestParam(required = false) String status,
+                                                   @RequestParam(required = false) String keyword,
+                                                   @RequestParam(required = false) Integer page,
+                                                   @RequestParam(required = false) Integer size) {
+        CargoQueryDTO queryDTO = new CargoQueryDTO();
+        queryDTO.setStatus(status);
+        queryDTO.setKeyword(keyword);
+        queryDTO.setPage(page);
+        queryDTO.setSize(size);
+        return ApiResponse.success(cargoService.page(queryDTO));
     }
 
     @PostMapping
     @ApiOperation("新增货物")
-    public ApiResponse<Map<String, Object>> create(@RequestBody Map<String, Object> request) {
-        return ApiResponse.success(starterService.createCargo(request));
+    public ApiResponse<CargoVO> create(@RequestBody CargoCreateDTO request) {
+        return ApiResponse.success(cargoService.create(request));
     }
 
     @GetMapping("/{cargoId}")
     @ApiOperation("获取货物详情")
-    public ApiResponse<Map<String, Object>> detail(@PathVariable String cargoId) {
-        return ApiResponse.success(starterService.cargoDetail(cargoId));
+    public ApiResponse<CargoVO> detail(@PathVariable String cargoId) {
+        return ApiResponse.success(cargoService.detail(cargoId));
     }
 
     @PostMapping("/bind")

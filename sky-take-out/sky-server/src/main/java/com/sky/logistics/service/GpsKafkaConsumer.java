@@ -54,11 +54,15 @@ public class GpsKafkaConsumer {
 
             // 1. 查找车辆信息
             Vehicle vehicle = vehicleMapper.findByVinTopic(vinTopic);
-            String plate = (vehicle != null) ? vehicle.getPlate() : vinTopic.replace("-", "·");
+            if (vehicle == null) {
+                log.warn("未找到 vinTopic 对应车辆，丢弃 GPS, vinTopic={}", vinTopic);
+                return;
+            }
+
+            String plate = vehicle.getPlate();
 
             // 校验 IMEI
-            if (vehicle != null && gps.getImei() != null
-                    && !gps.getImei().equals(vehicle.getDeviceImei())) {
+            if (gps.getImei() != null && !gps.getImei().equals(vehicle.getDeviceImei())) {
                 log.warn("IMEI 不匹配, 消息 imei={}, 车辆 imei={}", gps.getImei(), vehicle.getDeviceImei());
                 // 不丢弃，仅记录
             }
@@ -74,7 +78,7 @@ public class GpsKafkaConsumer {
             timescaleJdbc.update(
                 "INSERT INTO gps_points (time, vehicle_id, cargo_id, imei, lat, lng, speed, heading, accuracy) "
                 + "VALUES (?::timestamptz, ?, ?, ?, ?, ?, ?, ?, ?)",
-                ts, vinTopic, cargoId, gps.getImei(),
+                ts, vehicle.getId(), cargoId, gps.getImei(),
                 gps.getLat(), gps.getLng(),
                 gps.getSpeed(), gps.getHeading(), gps.getAccuracy()
             );

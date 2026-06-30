@@ -19,8 +19,8 @@ public class GpsPoint {
     /** UTC 时间戳 */
     private Instant time;
 
-    /** 车辆 vinTopic（如 沪A-C0291） */
-    private String vehicleId;
+    /** 车辆主键 ID */
+    private Long vehicleId;
 
     /** 当前运输的货物 ID */
     private String cargoId;

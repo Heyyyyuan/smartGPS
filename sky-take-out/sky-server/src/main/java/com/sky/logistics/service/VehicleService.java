@@ -1,7 +1,9 @@
 package com.sky.logistics.service;
 
 import com.sky.logistics.common.PageResponse;
+import com.sky.logistics.dto.VehicleCreateDTO;
 import com.sky.logistics.dto.VehicleQueryDTO;
+import com.sky.logistics.dto.VehicleUpdateDTO;
 import com.sky.logistics.vo.VehicleVO;
 
 public interface VehicleService {
@@ -9,4 +11,8 @@ public interface VehicleService {
     PageResponse<VehicleVO> page(VehicleQueryDTO queryDTO);
 
     VehicleVO detail(String plate);
+    VehicleVO detailById(Long id);
+    VehicleVO create(VehicleCreateDTO createDTO);
+    VehicleVO update(Long id, VehicleUpdateDTO updateDTO);
+    void delete(Long id);
 }

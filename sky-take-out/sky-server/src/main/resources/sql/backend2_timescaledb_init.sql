@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS gps_points CASCADE;
 
 CREATE TABLE gps_points (
   time TIMESTAMPTZ NOT NULL,
-  vehicle_id VARCHAR(32) NOT NULL,
+  vehicle_id BIGINT NOT NULL,
   cargo_id VARCHAR(64),
   imei VARCHAR(32),
   lat DOUBLE PRECISION,
