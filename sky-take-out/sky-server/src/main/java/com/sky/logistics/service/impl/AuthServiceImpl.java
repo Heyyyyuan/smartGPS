@@ -17,7 +17,9 @@ import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -121,8 +123,27 @@ public class AuthServiceImpl implements AuthService {
                 .name(user.getName())
                 .role(user.getRole())
                 .phone(user.getPhone())
-                .permissions(Arrays.asList(user.getRole() + "_STARTER"))
+                .permissions(permissionsOf(user.getRole()))
                 .build();
+    }
+
+    private List<String> permissionsOf(String role) {
+        if ("DISPATCHER".equals(role)) {
+            return Arrays.asList("VEHICLE_READ", "COMMAND_SEND", "ALERT_READ");
+        }
+        if ("WAREHOUSE".equals(role)) {
+            return Arrays.asList("VEHICLE_WRITE", "CARGO_WRITE", "BINDING_WRITE");
+        }
+        if ("SHIPPER".equals(role)) {
+            return Arrays.asList("CARGO_READ", "POSITION_READ", "ASSISTANT_CHAT");
+        }
+        if ("ADMIN".equals(role)) {
+            return Arrays.asList("SYSTEM_ADMIN", "VEHICLE_WRITE", "CARGO_WRITE", "ALERT_WRITE");
+        }
+        if ("DRIVER".equals(role)) {
+            return Arrays.asList("TASK_READ", "STATUS_REPORT");
+        }
+        return Collections.emptyList();
     }
 
     private String md5(String rawPassword) {

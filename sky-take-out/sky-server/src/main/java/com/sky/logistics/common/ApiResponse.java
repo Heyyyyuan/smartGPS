@@ -1,17 +1,29 @@
 package com.sky.logistics.common;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Data
+@ApiModel("统一响应")
 public class ApiResponse<T> {
 
+    @ApiModelProperty(value = "业务状态码，0 表示成功", example = "0")
     private Integer code;
+
+    @ApiModelProperty(value = "响应消息", example = "success")
     private String message;
+
+    @ApiModelProperty("响应数据")
     private T data;
+
+    @ApiModelProperty(value = "响应时间", example = "2026-06-29T06:15:00Z")
     private String timestamp;
+
+    @ApiModelProperty(value = "请求追踪 ID")
     private String requestId;
 
     public static <T> ApiResponse<T> success(T data) {
