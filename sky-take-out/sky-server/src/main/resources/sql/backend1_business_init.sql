@@ -53,14 +53,14 @@ CREATE TABLE cargo (
 CREATE TABLE cargo_vehicle_binding (
   id VARCHAR(64) PRIMARY KEY,
   cargo_id VARCHAR(64) NOT NULL REFERENCES cargo(cargo_id),
-  plate VARCHAR(32) NOT NULL REFERENCES vehicles(plate),
+  vehicle_id BIGINT NOT NULL REFERENCES vehicles(id),
   status VARCHAR(32) DEFAULT 'ACTIVE',
   bound_at TIMESTAMPTZ DEFAULT now(),
   unbound_at TIMESTAMPTZ
 );
 
 CREATE UNIQUE INDEX ux_active_vehicle_binding
-  ON cargo_vehicle_binding(plate)
+  ON cargo_vehicle_binding(vehicle_id)
   WHERE status = 'ACTIVE';
 
 CREATE UNIQUE INDEX ux_active_cargo_binding
@@ -109,8 +109,13 @@ INSERT INTO cargo (
   now()
 );
 
-INSERT INTO cargo_vehicle_binding (id, cargo_id, plate, status)
-VALUES ('BND-20260629-001', 'SH-HZ-20260629-0291', '沪A·C0291', 'ACTIVE');
+INSERT INTO cargo_vehicle_binding (id, cargo_id, vehicle_id, status)
+VALUES (
+  'BND-20260629-001',
+  'SH-HZ-20260629-0291',
+  (SELECT id FROM vehicles WHERE plate = '沪A·C0291'),
+  'ACTIVE'
+);
 
 INSERT INTO cargo_status_logs (id, cargo_id, status, lat, lng, remark, operator_id)
 VALUES ('LOG-20260629-001', 'SH-HZ-20260629-0291', 'LOADED', 31.2304, 121.4737, '上海仓储中心装货完成', 'USR-003');

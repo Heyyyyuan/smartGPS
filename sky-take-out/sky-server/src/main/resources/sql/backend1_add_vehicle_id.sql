@@ -45,7 +45,14 @@ BEGIN
   GROUP BY c.conname;
 
   IF pk_columns IS DISTINCT FROM 'id' THEN
-    IF to_regclass('cargo_vehicle_binding') IS NOT NULL THEN
+    IF to_regclass('cargo_vehicle_binding') IS NOT NULL
+       AND EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'cargo_vehicle_binding'
+           AND column_name = 'plate'
+       ) THEN
       ALTER TABLE cargo_vehicle_binding DROP CONSTRAINT IF EXISTS cargo_vehicle_binding_plate_fkey;
     END IF;
 
@@ -55,7 +62,14 @@ BEGIN
 
     ALTER TABLE vehicles ADD CONSTRAINT vehicles_pkey PRIMARY KEY (id);
 
-    IF to_regclass('cargo_vehicle_binding') IS NOT NULL THEN
+    IF to_regclass('cargo_vehicle_binding') IS NOT NULL
+       AND EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'cargo_vehicle_binding'
+           AND column_name = 'plate'
+       ) THEN
       ALTER TABLE cargo_vehicle_binding
         ADD CONSTRAINT cargo_vehicle_binding_plate_fkey
         FOREIGN KEY (plate) REFERENCES vehicles(plate);
