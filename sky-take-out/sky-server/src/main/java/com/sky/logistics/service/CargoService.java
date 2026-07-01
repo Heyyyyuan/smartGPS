@@ -1,10 +1,7 @@
 package com.sky.logistics.service;
 
 import com.sky.logistics.common.PageResponse;
-import com.sky.logistics.dto.CargoBindDTO;
-import com.sky.logistics.dto.CargoCreateDTO;
-import com.sky.logistics.dto.CargoQueryDTO;
-import com.sky.logistics.dto.CargoUnbindDTO;
+import com.sky.logistics.dto.*;
 import com.sky.logistics.vo.CargoVO;
 
 public interface CargoService {
@@ -18,5 +15,7 @@ public interface CargoService {
     CargoVO bind(CargoBindDTO bindDTO);
 
     CargoVO unbind(CargoUnbindDTO unbindDTO);
+
+    CargoVO updateStatus(String CargoID,CargoStatusUpdateDTO updateDTO);
 
 }

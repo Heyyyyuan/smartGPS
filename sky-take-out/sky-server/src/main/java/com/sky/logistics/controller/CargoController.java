@@ -2,10 +2,7 @@ package com.sky.logistics.controller;
 
 import com.sky.logistics.common.ApiResponse;
 import com.sky.logistics.common.PageResponse;
-import com.sky.logistics.dto.CargoBindDTO;
-import com.sky.logistics.dto.CargoCreateDTO;
-import com.sky.logistics.dto.CargoQueryDTO;
-import com.sky.logistics.dto.CargoUnbindDTO;
+import com.sky.logistics.dto.*;
 import com.sky.logistics.service.CargoService;
 import com.sky.logistics.service.LogisticsStarterService;
 import com.sky.logistics.vo.CargoVO;
@@ -76,8 +73,8 @@ public class CargoController {
 
     @PutMapping("/{cargoId}/status")
     @ApiOperation("更新货物状态")
-    public ApiResponse<Map<String, Object>> updateStatus(@PathVariable String cargoId, @RequestBody Map<String, Object> request) {
-        return ApiResponse.success(starterService.updateCargoStatus(cargoId, request));
+    public ApiResponse<CargoVO> updateStatus(@PathVariable String cargoId, @RequestBody CargoStatusUpdateDTO request) {
+        return ApiResponse.success(cargoService.updateStatus(cargoId, request));
     }
 
     @GetMapping("/{cargoId}/status-logs")

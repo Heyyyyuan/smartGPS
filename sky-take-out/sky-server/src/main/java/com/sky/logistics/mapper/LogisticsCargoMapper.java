@@ -2,6 +2,7 @@ package com.sky.logistics.mapper;
 
 import com.sky.logistics.entity.Cargo;
 import com.sky.logistics.entity.CargoRecord;
+import com.sky.logistics.entity.CargoStatusLog;
 import com.sky.logistics.entity.CargoVehicleBinding;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -34,4 +35,6 @@ public interface LogisticsCargoMapper {
     CargoVehicleBinding findActiveBindingByCargoId(@Param("cargoId") String cargoId);
 
     int unbindById(@Param("id") String id);
+
+    void insertStatusLog(CargoStatusLog cargoStatusLog);
 }

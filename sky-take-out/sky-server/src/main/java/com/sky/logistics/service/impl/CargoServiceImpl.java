@@ -2,10 +2,7 @@ package com.sky.logistics.service.impl;
 
 import com.sky.logistics.common.PageResponse;
 import com.sky.logistics.dto.*;
-import com.sky.logistics.entity.Cargo;
-import com.sky.logistics.entity.CargoRecord;
-import com.sky.logistics.entity.CargoVehicleBinding;
-import com.sky.logistics.entity.Vehicle;
+import com.sky.logistics.entity.*;
 import com.sky.logistics.mapper.LogisticsCargoMapper;
 import com.sky.logistics.mapper.LogisticsVehicleMapper;
 import com.sky.logistics.service.CargoService;
@@ -172,6 +169,50 @@ public class CargoServiceImpl implements CargoService {
 
         cargoMapper.updateCargoStatus(cargoId, "CREATED");
         return detail(cargoId);
+    }
+
+    @Override
+    @Transactional
+    public CargoVO updateStatus(String CargoID,CargoStatusUpdateDTO updateDTO) {
+        String SafeID = trimToNull(CargoID);
+        if (!StringUtils.hasText(SafeID)){
+            throw new IllegalArgumentException("货物ID不能为空");
+        }
+        if (updateDTO == null){
+            throw new IllegalArgumentException("状态信息不能为空");
+        }
+        String Status = trimToNull(updateDTO.getStatus());
+        if (!StringUtils.hasText(Status)){
+            throw new IllegalArgumentException("货物状态不能为空");
+        }
+        Status = Status.toUpperCase();
+        if(!isValidCargoStatus(Status)){
+            throw new IllegalArgumentException("货物状态不合法");
+        }
+        CargoRecord record = cargoMapper.findByCargoId(SafeID);
+        if (record == null){
+            throw new IllegalArgumentException("货物不存在");
+        }
+        cargoMapper.updateCargoStatus(SafeID, Status);
+        CargoStatusLog log = CargoStatusLog.builder()
+                .id("LOG-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase())
+                .cargoId(SafeID)
+                .status(Status)
+                .lat(updateDTO.getLat())
+                .lng(updateDTO.getLng())
+                .remark(trimToNull(updateDTO.getRemark()))
+                .operatorId(trimToNull(updateDTO.getOperatorId()))
+                .build();
+        cargoMapper.insertStatusLog(log);
+        return detail(SafeID);
+    }
+
+    private boolean isValidCargoStatus(String status) {
+        return "CREATED".equals(status)
+                || "LOADED".equals(status)
+                || "IN_TRANSIT".equals(status)
+                || "DELIVERED".equals(status)
+                || "CANCELLED".equals(status);
     }
 
     private CargoVO toVO(CargoRecord cargo) {

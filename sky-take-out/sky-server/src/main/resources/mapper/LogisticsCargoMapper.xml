@@ -88,6 +88,27 @@
           AND status = 'ACTIVE'
     </select>
 
+    <insert id="insertStatusLog" parameterType="com.sky.logistics.entity.CargoStatusLog">
+        INSERT INTO cargo_status_logs (
+            id,
+            cargo_id,
+            status,
+            lat,
+            lng,
+            remark,
+            operator_id,
+            created_at
+        ) VALUES (
+                     #{id},
+                     #{cargoId},
+                     #{status},
+                     #{lat},
+                     #{lng},
+                     #{remark},
+                     #{operatorId},
+                     now()
+                 )
+    </insert>
 
     <select id="findActiveBindingByCargoId" resultType="com.sky.logistics.entity.CargoVehicleBinding">
         SELECT
