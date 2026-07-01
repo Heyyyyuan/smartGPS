@@ -21,8 +21,8 @@ import javax.sql.DataSource;
 @Slf4j
 public class TimescaleDBConfig {
 
-    @Value("${timescaledb.datasource.url}")
-    private String url;
+    @Value("${timescaledb.datasource.jdbc-url}")
+    private String jdbcUrl;
 
     @Value("${timescaledb.datasource.username}")
     private String username;
@@ -38,10 +38,10 @@ public class TimescaleDBConfig {
      */
     @Bean(name = "timescaleDataSource")
     public DataSource timescaleDataSource() {
-        log.info("初始化 TimescaleDB 数据源: {}", url);
+        log.info("初始化 TimescaleDB 数据源: {}", jdbcUrl);
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(url);
+        config.setJdbcUrl(jdbcUrl);
         config.setUsername(username);
         config.setPassword(password);
         config.setDriverClassName(driverClassName);
