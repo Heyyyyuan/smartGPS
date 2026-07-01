@@ -1,15 +1,24 @@
 package com.sky.logistics.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sky.logistics.controller.LogisticsWebSocketServer;
 import com.sky.logistics.dto.GpsData;
+import com.sky.logistics.entity.CommandLog;
+import com.sky.logistics.mapper.CommandMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * MQTT 消息接收器
@@ -26,6 +35,12 @@ public class MqttMessageReceiver {
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private CommandMapper commandMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,6 +77,8 @@ public class MqttMessageReceiver {
             handleGps(topic, json);
         } else if (topic.endsWith("/heartbeat")) {
             handleHeartbeat(topic, json);
+        } else if (topic.endsWith("/command/ack")) {
+            handleCommandAck(topic, json);
         } else {
             log.warn("未知的 MQTT 主题: {}", topic);
         }
@@ -121,13 +138,69 @@ public class MqttMessageReceiver {
             String vinTopic = extractVin(topic);
             if (vinTopic == null) return;
 
-            // 心跳数据直接透传 JSON，由后端 3 消费处理
             kafkaTemplate.send("vehicle-heartbeats", vinTopic, json);
+            updateDeviceOnline(vinTopic, json);
 
-            log.debug("心跳已发送 Kafka, vinTopic={}", vinTopic);
+            log.debug("心跳已处理, vinTopic={}", vinTopic);
 
         } catch (Exception e) {
             log.error("处理心跳消息失败: {}", e.getMessage(), e);
+        }
+    }
+
+    private void updateDeviceOnline(String vinTopic, String json) {
+        try {
+            String imei = null;
+            try {
+                Map data = objectMapper.readValue(json, Map.class);
+                Object imeiObj = data.get("imei");
+                if (imeiObj != null) {
+                    imei = imeiObj.toString();
+                }
+            } catch (Exception ignored) {
+            }
+
+            String deviceId = (imei != null && !imei.isEmpty()) ? imei : vinTopic;
+            String key = "logistics:device:heartbeat:" + deviceId;
+
+            Map<String, String> onlineInfo = new LinkedHashMap<>();
+            onlineInfo.put("vinTopic", vinTopic);
+            if (imei != null) onlineInfo.put("imei", imei);
+            onlineInfo.put("lastHeartbeat", Instant.now().toString());
+
+            redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(onlineInfo), Duration.ofSeconds(90));
+            log.debug("Redis 设备在线已更新, key={}", key);
+        } catch (Exception e) {
+            log.error("Redis 设备在线状态更新失败: {}", e.getMessage(), e);
+        }
+    }
+
+    private void handleCommandAck(String topic, String json) {
+        try {
+            Map data = objectMapper.readValue(json, Map.class);
+            String commandId = data.get("commandId") != null ? data.get("commandId").toString() : null;
+            String status = data.get("status") != null ? data.get("status").toString() : null;
+            if (commandId == null || status == null) return;
+
+            commandMapper.updateStatus(commandId, status);
+
+            CommandLog cmdLog = new CommandLog();
+            cmdLog.setId("CML-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
+            cmdLog.setCommandId(commandId);
+            cmdLog.setStatus(status);
+            cmdLog.setSource("MQTT_ACK");
+            cmdLog.setRawPayload(json);
+            commandMapper.insertLog(cmdLog);
+
+            Map<String, Object> pushData = new LinkedHashMap<>();
+            pushData.put("commandId", commandId);
+            pushData.put("status", status);
+            pushData.put("timestamp", Instant.now().toString());
+            LogisticsWebSocketServer.broadcast("command.ack", pushData);
+
+            log.info("指令回执已处理, commandId={}, status={}", commandId, status);
+        } catch (Exception e) {
+            log.error("处理指令回执失败: {}", e.getMessage(), e);
         }
     }
 
