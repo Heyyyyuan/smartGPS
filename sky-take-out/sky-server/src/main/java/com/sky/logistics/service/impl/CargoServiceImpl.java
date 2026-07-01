@@ -1,12 +1,16 @@
 package com.sky.logistics.service.impl;
 
 import com.sky.logistics.common.PageResponse;
+import com.sky.logistics.dto.CargoBindDTO;
 import com.sky.logistics.dto.CargoCreateDTO;
 import com.sky.logistics.dto.CargoLocationDTO;
 import com.sky.logistics.dto.CargoQueryDTO;
 import com.sky.logistics.entity.Cargo;
 import com.sky.logistics.entity.CargoRecord;
+import com.sky.logistics.entity.CargoVehicleBinding;
+import com.sky.logistics.entity.Vehicle;
 import com.sky.logistics.mapper.LogisticsCargoMapper;
+import com.sky.logistics.mapper.LogisticsVehicleMapper;
 import com.sky.logistics.service.CargoService;
 import com.sky.logistics.vo.CargoLocationVO;
 import com.sky.logistics.vo.CargoVO;
@@ -17,6 +21,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +34,11 @@ public class CargoServiceImpl implements CargoService {
     private static final String DEFAULT_STATUS = "CREATED";
 
     private final LogisticsCargoMapper cargoMapper;
+    private final LogisticsVehicleMapper vehicleMapper;
 
-    public CargoServiceImpl(LogisticsCargoMapper cargoMapper) {
+    public CargoServiceImpl(LogisticsCargoMapper cargoMapper, LogisticsVehicleMapper vehicleMapper) {
         this.cargoMapper = cargoMapper;
+        this.vehicleMapper = vehicleMapper;
     }
 
     @Override
@@ -97,6 +104,50 @@ public class CargoServiceImpl implements CargoService {
 
         cargoMapper.insert(cargo);
         return toVO(cargoMapper.findByCargoId(cargoId));
+    }
+
+    @Override
+    @Transactional
+    public CargoVO bind(CargoBindDTO bindDTO) {
+        if (bindDTO == null) {
+            throw new IllegalArgumentException("绑定信息不能为空");
+        }
+
+        String cargoId = trimToNull(bindDTO.getCargoId());
+        Long vehicleId = bindDTO.getVehicleId();
+
+        if (!StringUtils.hasText(cargoId)) {
+            throw new IllegalArgumentException("货物 ID 不能为空");
+        }
+        if (vehicleId == null || vehicleId < 1) {
+            throw new IllegalArgumentException("车辆 ID 不正确");
+        }
+
+        CargoRecord cargo = cargoMapper.findByCargoId(cargoId);
+        if (cargo == null) {
+            throw new IllegalArgumentException("货物不存在");
+        }
+
+        Vehicle vehicle = vehicleMapper.findById(vehicleId);
+        if (vehicle == null) {
+            throw new IllegalArgumentException("车辆不存在");
+        }
+
+        Long cargoBindingCount = cargoMapper.countActiveBindingByCargoId(cargoId);
+        if (cargoBindingCount != null && cargoBindingCount > 0) {
+            throw new IllegalArgumentException("货物已经绑定车辆");
+        }
+
+        CargoVehicleBinding binding = new CargoVehicleBinding();
+        binding.setId("BND-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
+        binding.setCargoId(cargoId);
+        binding.setVehicleId(vehicleId);
+        binding.setStatus("ACTIVE");
+
+        cargoMapper.insertBinding(binding);
+        cargoMapper.updateCargoStatus(cargoId, "LOADED");
+
+        return detail(cargoId);
     }
 
     private CargoVO toVO(CargoRecord cargo) {

@@ -74,6 +74,20 @@
         WHERE c.cargo_id = #{cargoId}
     </select>
 
+    <select id="countActiveBindingByCargoId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM cargo_vehicle_binding
+        WHERE cargo_id = #{cargoId}
+          AND status = 'ACTIVE'
+    </select>
+
+    <select id="countActiveBindingByVehicleId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM cargo_vehicle_binding
+        WHERE vehicle_id = #{vehicleId}
+          AND status = 'ACTIVE'
+    </select>
+
     <insert id="insert" parameterType="com.sky.logistics.entity.Cargo">
         INSERT INTO cargo (
             cargo_id,
@@ -103,5 +117,32 @@
             now()
         )
     </insert>
+
+    <insert id="insertBinding" parameterType="com.sky.logistics.entity.CargoVehicleBinding">
+        INSERT INTO cargo_vehicle_binding (
+            id,
+            cargo_id,
+            vehicle_id,
+            status,
+            bound_at
+        ) VALUES (
+            #{id},
+            #{cargoId},
+            #{vehicleId},
+            #{status},
+            now()
+        )
+    </insert>
+
+    <update id="updateCargoStatus">
+        UPDATE cargo
+        SET status = #{status},
+            loaded_at = CASE
+                WHEN #{status} = 'LOADED' AND loaded_at IS NULL THEN now()
+                ELSE loaded_at
+            END,
+            updated_at = now()
+        WHERE cargo_id = #{cargoId}
+    </update>
 
 </mapper>

@@ -2,6 +2,7 @@ package com.sky.logistics.controller;
 
 import com.sky.logistics.common.ApiResponse;
 import com.sky.logistics.common.PageResponse;
+import com.sky.logistics.dto.CargoBindDTO;
 import com.sky.logistics.dto.CargoCreateDTO;
 import com.sky.logistics.dto.CargoQueryDTO;
 import com.sky.logistics.service.CargoService;
@@ -62,8 +63,8 @@ public class CargoController {
 
     @PostMapping("/bind")
     @ApiOperation("绑定货物与车辆")
-    public ApiResponse<Map<String, Object>> bind(@RequestBody Map<String, Object> request) {
-        return ApiResponse.success(starterService.bindCargo(request));
+    public ApiResponse<CargoVO> bind(@RequestBody CargoBindDTO request) {
+        return ApiResponse.success(cargoService.bind(request));
     }
 
     @PostMapping("/unbind")

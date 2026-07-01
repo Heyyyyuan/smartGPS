@@ -5,32 +5,56 @@
 
 <mapper namespace="com.sky.logistics.mapper.LogisticsUserMapper">
 
+    <sql id="UserColumns">
+        id,
+        username,
+        password_hash AS passwordHash,
+        name,
+        role,
+        phone,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+    </sql>
+
     <select id="findByUsername" resultType="com.sky.logistics.entity.LogisticsUser">
         SELECT
-            id,
-            username,
-            password_hash AS passwordHash,
-            name,
-            role,
-            phone,
-            created_at AS createdAt,
-            updated_at AS updatedAt
+            <include refid="UserColumns"/>
         FROM users
         WHERE username = #{username}
     </select>
 
     <select id="findById" resultType="com.sky.logistics.entity.LogisticsUser">
         SELECT
-            id,
-            username,
-            password_hash AS passwordHash,
-            name,
-            role,
-            phone,
-            created_at AS createdAt,
-            updated_at AS updatedAt
+            <include refid="UserColumns"/>
         FROM users
         WHERE id = #{id}
     </select>
+
+    <insert id="insert" parameterType="com.sky.logistics.entity.LogisticsUser">
+        INSERT INTO users (
+            id,
+            username,
+            password_hash,
+            name,
+            role,
+            phone,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{id},
+            #{username},
+            #{passwordHash},
+            #{name},
+            #{role},
+            #{phone},
+            now(),
+            now()
+        )
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM users
+        WHERE id = #{id}
+    </delete>
 
 </mapper>
