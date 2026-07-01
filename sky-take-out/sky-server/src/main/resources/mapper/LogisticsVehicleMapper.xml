@@ -159,5 +159,18 @@
         DELETE FROM vehicles
         WHERE id = #{id}
     </delete>
+	<select id="findAll" resultType="com.sky.logistics.entity.Vehicle">
+		SELECT
+		<include refid="VehicleColumns"/>
+		FROM vehicles
+		ORDER BY updated_at DESC
+	</select>
+
+	<update id="updateDeviceStatus">
+		UPDATE vehicles
+		SET device_status = #{deviceStatus},
+			updated_at = now()
+		WHERE id = #{id}
+	</update>
 
 </mapper>

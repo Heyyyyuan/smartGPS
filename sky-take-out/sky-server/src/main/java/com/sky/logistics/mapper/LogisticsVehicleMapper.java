@@ -39,5 +39,10 @@ public interface LogisticsVehicleMapper {
 
     int update(Vehicle vehicle);
 
-    void deleteById(@Param("id") Long id);
+    int deleteById(@Param("id") Long id);
+
+    List<Vehicle> findAll();
+
+    int updateDeviceStatus(@Param("id") Long id,
+                           @Param("deviceStatus") String deviceStatus);
 }

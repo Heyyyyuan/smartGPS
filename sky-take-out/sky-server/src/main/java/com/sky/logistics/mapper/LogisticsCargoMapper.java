@@ -32,6 +32,8 @@ public interface LogisticsCargoMapper {
 
     void updateCargoStatus(@Param("cargoId") String cargoId, @Param("status") String status);
 
+    List<CargoRecord> findInTransitWithVehicle();
+
     CargoVehicleBinding findActiveBindingByCargoId(@Param("cargoId") String cargoId);
 
     int unbindById(@Param("id") String id);

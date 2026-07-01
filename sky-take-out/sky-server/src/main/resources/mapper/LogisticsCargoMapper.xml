@@ -205,6 +205,15 @@
             updated_at = now()
         WHERE cargo_id = #{cargoId}
     </update>
+
+    <select id="findInTransitWithVehicle" resultType="com.sky.logistics.entity.CargoRecord">
+        SELECT
+        <include refid="CargoViewColumns"/>
+        <include refid="CargoFrom"/>
+        WHERE c.status = 'IN_TRANSIT'
+        AND v.id IS NOT NULL
+    </select>
+
     <update id="unbindById">
         UPDATE cargo_vehicle_binding
         SET status = 'UNBOUND',
