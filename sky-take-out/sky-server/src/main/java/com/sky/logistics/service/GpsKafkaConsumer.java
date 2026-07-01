@@ -131,6 +131,10 @@ public class GpsKafkaConsumer {
             redisTemplate.opsForValue().set(key, json, Duration.ofHours(24));
 
             log.debug("Redis 最新位置已更新, key={}", key);
+
+            // 4. WebSocket 推送给前端
+            com.sky.logistics.controller.LogisticsWebSocketServer.broadcast("vehicle.position", json);
+
         } catch (Exception e) {
             log.error("Redis 更新失败: {}", e.getMessage(), e);
         }
