@@ -2,6 +2,7 @@ package com.sky.logistics.controller;
 
 import com.sky.logistics.common.ApiResponse;
 import com.sky.logistics.common.PageResponse;
+import com.sky.logistics.service.DeviceService;
 import com.sky.logistics.service.LogisticsStarterService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,9 +20,11 @@ import java.util.Map;
 @Api(tags = "智慧物流-设备在线")
 public class DeviceController {
 
+    private final DeviceService deviceService;
     private final LogisticsStarterService starterService;
 
-    public DeviceController(LogisticsStarterService starterService) {
+    public DeviceController(DeviceService deviceService, LogisticsStarterService starterService) {
+        this.deviceService = deviceService;
         this.starterService = starterService;
     }
 
@@ -31,13 +34,13 @@ public class DeviceController {
                                                    @RequestParam(required = false) String keyword,
                                                    @RequestParam(required = false) Integer page,
                                                    @RequestParam(required = false) Integer size) {
-        return ApiResponse.success(starterService.deviceStatus(status, keyword, page, size));
+        return ApiResponse.success(deviceService.getDeviceStatus(status, keyword, page, size));
     }
 
     @GetMapping("/{imei}")
     @ApiOperation("获取设备详情")
     public ApiResponse<Map<String, Object>> detail(@PathVariable String imei) {
-        return ApiResponse.success(starterService.deviceDetail(imei));
+        return ApiResponse.success(deviceService.getDeviceDetail(imei));
     }
 
     @GetMapping("/{imei}/heartbeats")
