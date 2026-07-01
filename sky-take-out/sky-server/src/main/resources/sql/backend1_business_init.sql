@@ -59,7 +59,7 @@ CREATE TABLE cargo_vehicle_binding (
   unbound_at TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX ux_active_vehicle_binding
+CREATE INDEX idx_active_vehicle_binding
   ON cargo_vehicle_binding(vehicle_id)
   WHERE status = 'ACTIVE';
 

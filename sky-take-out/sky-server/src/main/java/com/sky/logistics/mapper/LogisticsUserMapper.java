@@ -10,4 +10,8 @@ public interface LogisticsUserMapper {
     LogisticsUser findByUsername(@Param("username") String username);
 
     LogisticsUser findById(@Param("id") String id);
+
+    void insert(LogisticsUser user);
+
+    void deleteById(@Param("id") String id);
 }

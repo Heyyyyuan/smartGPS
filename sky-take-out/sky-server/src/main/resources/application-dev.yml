@@ -58,7 +58,7 @@ mqtt:
 # TimescaleDB 时序库（第二数据源），存储 gps_points 和 device_heartbeats
 timescaledb:
   datasource:
-    url: jdbc:postgresql://${TIMESCALEDB_HOST:localhost}:${TIMESCALEDB_PORT:5433}/${TIMESCALEDB_DATABASE:gps}
+    jdbc-url: jdbc:postgresql://${TIMESCALEDB_HOST:localhost}:${TIMESCALEDB_PORT:5433}/${TIMESCALEDB_DATABASE:gps}
     username: ${TIMESCALEDB_USERNAME:postgres}
     password: ${TIMESCALEDB_PASSWORD:123456}
     driver-class-name: org.postgresql.Driver
