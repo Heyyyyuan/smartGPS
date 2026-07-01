@@ -44,6 +44,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - logistics-network
 
   # Redis 缓存
   redis:
@@ -91,6 +93,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - logistics-network
 
   # 初始化后端 2 会用到的 Kafka Topic
   kafka-init:
@@ -105,6 +109,8 @@ services:
       - |
         kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic gps-points --partitions 3 --replication-factor 1
         kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic vehicle-heartbeats --partitions 3 --replication-factor 1
+    networks:
+      - logistics-network
 
   # EMQX MQTT Broker
   emqx:
@@ -122,39 +128,6 @@ services:
       test: ["CMD", "/opt/emqx/bin/emqx", "ping"]
       interval: 5s
       timeout: 5s
-      retries: 10
-    networks:
-      - logistics-network
-
-  # Kafka 消息队列 (KRaft 模式，无需 Zookeeper)
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: logistics-kafka
-    ports:
-      - "9092:9092"
-    environment:
-      # KRaft 模式
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      # 监听器
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      # 自动创建 topic（开发便利）
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_NUM_PARTITIONS: 3
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-    volumes:
-      - kafka-data:/var/lib/kafka/data
-    healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
-      interval: 10s
-      timeout: 10s
       retries: 10
     networks:
       - logistics-network
@@ -206,7 +179,6 @@ volumes:
   redis-data:
   kafka-data:
   emqx-data:
-  kafka-data:
   minio-data:
 
 # 内部网络
