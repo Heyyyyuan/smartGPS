@@ -2,7 +2,7 @@ package com.sky.logistics.controller;
 
 import com.sky.logistics.common.ApiResponse;
 import com.sky.logistics.common.PageResponse;
-import com.sky.logistics.service.LogisticsStarterService;
+import com.sky.logistics.service.AlertService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +20,10 @@ import java.util.Map;
 @Api(tags = "智慧物流-告警中心")
 public class AlertController {
 
-    private final LogisticsStarterService starterService;
+    private final AlertService alertService;
 
-    public AlertController(LogisticsStarterService starterService) {
-        this.starterService = starterService;
+    public AlertController(AlertService alertService) {
+        this.alertService = alertService;
     }
 
     @GetMapping
@@ -31,32 +31,36 @@ public class AlertController {
     public ApiResponse<PageResponse<Map<String, Object>>> list(@RequestParam(required = false) String severity,
                                                                @RequestParam(required = false) String type,
                                                                @RequestParam(required = false) String status,
+                                                               @RequestParam(required = false) String vehiclePlate,
                                                                @RequestParam(required = false) Integer page,
                                                                @RequestParam(required = false) Integer size) {
-        return ApiResponse.success(starterService.alerts(severity, type, status, page, size));
-    }
-
-    @GetMapping("/stats")
-    @ApiOperation("获取告警统计")
-    public ApiResponse<Map<String, Object>> stats() {
-        return ApiResponse.success(starterService.alertStats());
+        return ApiResponse.success(alertService.listAlerts(severity, type, status, vehiclePlate, page, size));
     }
 
     @GetMapping("/{alertId}")
     @ApiOperation("获取告警详情")
     public ApiResponse<Map<String, Object>> detail(@PathVariable String alertId) {
-        return ApiResponse.success(starterService.alertDetail(alertId));
+        return ApiResponse.success(alertService.getAlertDetail(alertId));
+    }
+
+    @GetMapping("/stats")
+    @ApiOperation("获取告警统计")
+    public ApiResponse<Map<String, Object>> stats() {
+        return ApiResponse.success(alertService.getAlertStats());
     }
 
     @PostMapping("/{alertId}/acknowledge")
     @ApiOperation("确认告警")
     public ApiResponse<Map<String, Object>> acknowledge(@PathVariable String alertId, @RequestBody Map<String, Object> request) {
-        return ApiResponse.success(starterService.acknowledgeAlert(alertId, request));
+        String remark = request != null ? (String) request.get("remark") : null;
+        return ApiResponse.success(alertService.acknowledgeAlert(alertId, remark));
     }
 
     @PostMapping("/{alertId}/resolve")
     @ApiOperation("关闭告警")
     public ApiResponse<Map<String, Object>> resolve(@PathVariable String alertId, @RequestBody Map<String, Object> request) {
-        return ApiResponse.success(starterService.resolveAlert(alertId, request));
+        String resolution = request != null ? (String) request.get("resolution") : null;
+        String remark = request != null ? (String) request.get("remark") : null;
+        return ApiResponse.success(alertService.resolveAlert(alertId, resolution, remark));
     }
 }
