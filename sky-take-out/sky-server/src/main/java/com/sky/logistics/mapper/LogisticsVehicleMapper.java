@@ -39,5 +39,5 @@ public interface LogisticsVehicleMapper {
 
     int update(Vehicle vehicle);
 
-    int deleteById(@Param("id") Long id);
+    void deleteById(@Param("id") Long id);
 }
